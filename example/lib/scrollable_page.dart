@@ -16,17 +16,17 @@ class CustomScrollBehaviour extends MaterialScrollBehavior {
       case TargetPlatform.macOS:
         return Scrollbar(
           controller: details.controller,
-          isAlwaysShown: true,
+          thumbVisibility: true,
           child: child,
         );
       case TargetPlatform.windows:
         return Scrollbar(
           controller: details.controller,
-          isAlwaysShown: true,
+          thumbVisibility: true,
           radius: Radius.zero,
           thickness: 16.0,
           hoverThickness: 16.0,
-          showTrackOnHover: true,
+          trackVisibility: true,
           child: child,
         );
       case TargetPlatform.android:
@@ -61,6 +61,21 @@ class _ScrollablePageState extends State<ScrollablePage> {
 
   Axis axis = Axis.vertical;
   bool useSystemCursor = false;
+  bool accelerated = true;
+
+  void toggleAccelerated() {
+    setState(() {
+      accelerated = !accelerated;
+      showSnackBar('accelerated: $accelerated');
+    });
+  }
+
+  void toggleCursor() {
+    setState(() {
+      useSystemCursor = !useSystemCursor;
+      showSnackBar('useSystemCursor: $useSystemCursor');
+    });
+  }
 
   void toggleAxis() {
     setState(() {
@@ -69,13 +84,13 @@ class _ScrollablePageState extends State<ScrollablePage> {
       } else {
         axis = Axis.vertical;
       }
+      showSnackBar('axis: $axis');
     });
   }
 
-  void toggleCursor() {
-    setState(() {
-      useSystemCursor = !useSystemCursor;
-    });
+  void showSnackBar(String text) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text), duration: const Duration(milliseconds: 1000),));
   }
 
   @override
@@ -144,19 +159,27 @@ class _ScrollablePageState extends State<ScrollablePage> {
         padding: const EdgeInsets.all(10.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             FloatingActionButton.extended(
-              onPressed: toggleCursor,
-              label: const Text('Toggle cursor'),
+              onPressed: toggleAxis,
+              label: const Text('Toggle axis'),
               backgroundColor: Colors.black,
               heroTag: 'FirstFAB',
             ),
             const SizedBox(height: 10.0),
             FloatingActionButton.extended(
-              onPressed: toggleAxis,
-              label: const Text('Toggle axis'),
+              onPressed: toggleCursor,
+              label: const Text('Toggle cursor'),
               backgroundColor: Colors.black,
               heroTag: 'SecondFAB',
+            ),
+            const SizedBox(height: 10.0),
+            FloatingActionButton.extended(
+              onPressed: toggleAccelerated,
+              label: const Text('Toggle accelerated'),
+              backgroundColor: Colors.black,
+              heroTag: 'ThirdFAB',
             ),
           ],
         ),
@@ -235,15 +258,18 @@ class _ScrollablePageState extends State<ScrollablePage> {
                     '5. Check out the console for events log',
                     style: textStyleMedium,
                   ),
-                  const SizedBox(height: 20.0),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Current scrollables orientation: ${describeEnum(axis)}',
+                    style: textStyleSmall,
+                  ),
                   Text(
                     'Current cursor type: '
                     '${useSystemCursor ? 'system' : 'custom'}',
                     style: textStyleSmall,
                   ),
                   Text(
-                    'Current scrollables orientation: ${describeEnum(axis)}',
-                    style: textStyleSmall,
+                    'Current accelerated: $accelerated', style: textStyleSmall,
                   ),
                 ],
               ),
@@ -283,9 +309,10 @@ class _ScrollablePageState extends State<ScrollablePage> {
           return const Duration(milliseconds: 2000);
         },
       ),
-      customMouseWheelScrollConfig: const CustomMouseWheelScrollConfig(
+      customMouseWheelScrollConfig: CustomMouseWheelScrollConfig(
         scrollAmountMultiplier: 4.0,
-        scrollDuration: Duration(milliseconds: 350),
+        scrollDuration: const Duration(milliseconds: 350),
+        accelerated: accelerated,
       ),
       child: ScrollConfiguration(
         behavior: const CustomScrollBehaviour(),

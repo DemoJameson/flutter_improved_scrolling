@@ -104,15 +104,19 @@ class CustomMouseWheelScrollConfig {
   /// Default values
   const CustomMouseWheelScrollConfig({
     this.scrollAmountMultiplier = 3.0,
+    this.accelerated = true,
     this.scrollDuration = const Duration(milliseconds: 400),
     this.scrollCurve = Curves.linearToEaseOut,
-    this.mouseWheelTurnsThrottleTimeMs = 80,
+    this.mouseWheelTurnsThrottleTimeMs = 0,
   });
 
   /// Extra amount to scroll when scrolling using mouse wheel
   ///
   /// Can be negative
   final double scrollAmountMultiplier;
+
+  /// Whether to accelerate during continuous scrolling
+  final bool accelerated;
 
   /// Scroll duration
   final Duration scrollDuration;

@@ -332,6 +332,9 @@ class _ImprovedScrollingState extends State<ImprovedScrolling> {
   Widget build(BuildContext context) {
     var child = widget.child;
 
+    double? lastForwardOffset;
+    double? lastBackwardOffset;
+
     child = Listener(
       onPointerDown: (event) {
         // Set the initial local position, cursor type and velocity
@@ -399,29 +402,46 @@ class _ImprovedScrollingState extends State<ImprovedScrolling> {
           // return 0.0 now, but it actually returns +-33.3333,
           // which means they are somehow inverted)
           final scrollDelta = event.scrollDelta.dy;
+          final config = widget.customMouseWheelScrollConfig;
 
-          final newOffset = scrollController.offset +
-              scrollDelta *
-                  widget.customMouseWheelScrollConfig.scrollAmountMultiplier;
+          var newOffset = scrollController.offset + scrollDelta * config.scrollAmountMultiplier;
 
-          final duration = widget.customMouseWheelScrollConfig.scrollDuration;
-          final curve = widget.customMouseWheelScrollConfig.scrollCurve;
+          final duration = config.scrollDuration;
+          final curve = config.scrollCurve;
 
           if (scrollDelta.isNegative) {
             mouseWheelForwardThrottler.run(() {
+              if (config.accelerated && lastForwardOffset != null) {
+                newOffset = lastForwardOffset! + scrollDelta * config.scrollAmountMultiplier;
+              }
+
+              final lastValue = lastForwardOffset = newOffset;
               scrollController.animateTo(
                 math.max(0.0, newOffset),
                 duration: duration,
                 curve: curve,
-              );
+              ).then((value) {
+                if (lastValue == lastForwardOffset) {
+                  lastForwardOffset = null;
+                }
+              });
             });
           } else {
             mouseWheelBackwardThrottler.run(() {
+              if (config.accelerated && lastBackwardOffset != null) {
+                newOffset = lastBackwardOffset! + scrollDelta * config.scrollAmountMultiplier;
+              }
+
+              final lastValue = lastBackwardOffset = newOffset;
               scrollController.animateTo(
                 math.min(scrollController.position.maxScrollExtent, newOffset),
                 duration: duration,
                 curve: curve,
-              );
+              ).then((value) {
+                if (lastValue == lastBackwardOffset) {
+                  lastBackwardOffset = null;
+                }
+              });
             });
           }
         }
@@ -522,9 +542,9 @@ class _ImprovedScrollingState extends State<ImprovedScrolling> {
               scrollController.animateTo(
                 scrollController.position.minScrollExtent,
                 duration: homeScrollDurationBuilder?.call(
-                      scrollController.offset,
-                      scrollController.position.minScrollExtent,
-                    ) ??
+                  scrollController.offset,
+                  scrollController.position.minScrollExtent,
+                ) ??
                     defaultHomeEndScrollDuration,
                 curve: curve,
               );
@@ -532,9 +552,9 @@ class _ImprovedScrollingState extends State<ImprovedScrolling> {
               scrollController.animateTo(
                 scrollController.position.maxScrollExtent,
                 duration: endScrollDurationBuilder?.call(
-                      scrollController.offset,
-                      scrollController.position.maxScrollExtent,
-                    ) ??
+                  scrollController.offset,
+                  scrollController.position.maxScrollExtent,
+                ) ??
                     defaultHomeEndScrollDuration,
                 curve: curve,
               );

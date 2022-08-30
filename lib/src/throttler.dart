@@ -8,15 +8,10 @@ class Throttler {
 
   /// Run the function which needs to be throttled
   void run(void Function() action) {
-    if (_lastRunTimeMs == null) {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (_lastRunTimeMs == null || now - _lastRunTimeMs! > _throttleTimeMs) {
       action();
-      _lastRunTimeMs = DateTime.now().millisecondsSinceEpoch;
-    } else {
-      if (DateTime.now().millisecondsSinceEpoch - _lastRunTimeMs! >
-          _throttleTimeMs) {
-        action();
-        _lastRunTimeMs = DateTime.now().millisecondsSinceEpoch;
-      }
+      _lastRunTimeMs = now;
     }
   }
 }

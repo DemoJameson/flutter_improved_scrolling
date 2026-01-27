@@ -1,3 +1,5 @@
+<h3>This package has been deprecated</h3>
+
 <p align="center">
 <img src="https://raw.githubusercontent.com/adrianflutur/flutter_improved_scrolling/main/doc/media/logo.png" width="640" alt="improved_scrolling" />
 </p>

@@ -1,3 +1,7 @@
+## 0.0.4
+
+- This package has been deprecated
+
 ## 0.0.3
 
 - Added one throttler for each mouse wheel scrolling direction for being able to throttle independently
